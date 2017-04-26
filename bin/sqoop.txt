@@ -1,0 +1,7 @@
+#sqoop export --connect jdbc:mysql://10.20.10.1:3306/nssa_db  --username sheshou --password SjhdTdhg9@sheshou --table attack_list --export-dir /sheshou/data/parquet/realtime/break  --fields-terminated-by '\001'
+sqoop export --connect jdbc:mysql://10.20.10.1:3306/nssa_db  --username sheshou --password SjhdTdhg9@sheshou --table attack_geo_distribution --export-dir /sheshou/data/textfile/attack_geo_distribution  --fields-terminated-by '\001'
+sqoop export --connect jdbc:mysql://10.20.10.1:3306/nssa_db  --username sheshou --password SjhdTdhg9@sheshou --table attack_type_stat --export-dir /sheshou/data/textfile/attack_type_stat  --fields-terminated-by '\001'
+sqoop export --connect jdbc:mysql://10.20.10.1:3306/nssa_db  --username sheshou --password SjhdTdhg9@sheshou --table dayly_stat --export-dir /sheshou/data/textfile/dayly_stat  --fields-terminated-by '\001'
+sqoop export --connect jdbc:mysql://10.20.10.1:3306/nssa_db  --username sheshou --password SjhdTdhg9@sheshou --table hourly_stat --export-dir /sheshou/data/textfile/hourly_stat  --fields-terminated-by '\001'
+sqoop export --connect jdbc:mysql://10.20.10.1:3306/nssa_db  --username sheshou --password SjhdTdhg9@sheshou --table prediction_dayly_stat --export-dir /sheshou/data/textfile/prediction_dayly_stat  --fields-terminated-by '\001'
+sqoop export --connect jdbc:mysql://10.20.10.1:3306/nssa_db  --username sheshou --password SjhdTdhg9@sheshou --table prediction_hourly_stat --export-dir /sheshou/data/textfile/prediction_hourly_stat  --fields-terminated-by '\001'

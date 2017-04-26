@@ -1,0 +1,9 @@
+./bin/spark-submit --class "sheshou.offline.ReadParquetData"  --master local[*] /usr/sheshoudataanalysis/lib/protonplan-1.0-SNAPSHOT.jar /sheshou/data/parquet/windowslogin/2017/4/19/0 /sheshou/data/parquet/realtime/break
+
+./bin/spark-submit --class "sheshou.predict.PredictValue" --master local[*]  /usr/sheshoudataanalysis/lib/protonplan-1.0-SNAPSHOT.jar 10.20.10.3:10000 sheshou hourly_stat mal_operation prediction_hourly_stat
+
+./bin/spark-submit --class "sheshou.predict.DailyPrediction" --master local[*]  /usr/sheshoudataanalysis/lib/protonplan-1.0-SNAPSHOT.jar 10.20.10.3:10000 sheshou dayly_stat mal_operation prediction_dayly_stat
+
+./bin/spark-submit --class  "sheshou.writesql.Write2Mysql" --master local[*]  /usr/sheshoudataanalysis/lib/writesql.jar /sheshou/data/parquet/realtime/break/2017/4/19/17 10.20.10.1 nssa_db windowslogin
+
+/usr/hdp/2.5.3.0-37/spark2/bin/spark-submit --class  "sheshou.writesql.Write2Mysql" --master local[*]  /usr/sheshoudataanalysis/lib/writemysql.jar /sheshou/data/parquet/realtime/break/2017/4/19/17 10.20.10.1 nssa_db attack_list

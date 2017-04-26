@@ -1,0 +1,105 @@
+CREATE TABLE attack_geo_distribution (
+  id string,
+  country_code string,
+  country_name string,
+  24hours_count string,
+  7days_count string,
+  30day_count string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/attack_geo_distribution';
+
+
+CREATE TABLE attack_list (
+  id string,
+  attack_time string,
+  dst_ip string,
+  src_ip string,
+  attack_type string,
+  src_country_code string,
+  src_country string,
+  src_city string,
+  dst_country_code string,
+  dst_country string,
+  dst_city string,
+  src_latitude string,
+  src_longitude string,
+  dst_latitude string,
+  dst_longitude string,
+  end_time string,
+  asset_id string,
+  asset_name string,
+  alert_level string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/attack_list';
+
+
+CREATE TABLE attack_type_stat (
+  id string,
+  attack_type string,
+  current_count string,
+  last_hour_count string,
+  last_24hour_count string,
+  last_7days_count string,
+  last_month_count string,
+  history_count string,
+  cp1 string,
+  cp2 string,
+  cp3 string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/attack_type_stat';
+
+
+CREATE TABLE dayly_stat (
+  time_day string ,
+  vulnerability_count string,
+  weak_password string,
+  none_compliance string,
+  mal_operation string,
+  attack string,
+  abnormal_volume string,
+  ddos_volume string,
+  business_volume string,
+  log_count string,
+  stringel_count string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/dayly_stat';
+
+
+CREATE TABLE hourly_stat (
+  time_hour string,
+  vulnerability_count string,
+  weak_password string,
+  none_compliance string,
+  mal_operation string,
+  attack string,
+  abnormal_volume string,
+  ddos_volume string,
+  business_volume string,
+  log_count string,
+  stringel_count string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/hourly_stat';
+
+
+CREATE TABLE prediction_dayly_stat (
+  id string,
+  business_sys string,
+  time_day string,
+  attack_type string,
+  real_count string,
+  predict_count string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/prediction_dayly_stat';
+
+
+CREATE TABLE prediction_hourly_stat (
+  id string,
+  business_sys string,
+  time_hour string,
+  attack_type string,
+  real_count string,
+  predict_count string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/prediction_hourly_stat';
+
+
+CREATE TABLE security_info (
+  id string,
+  collect_time string,
+  info_type string,
+  info_content string,
+  info_url string
+) STORED AS TEXTFILE LOCATION '/sheshou/data/textfile/security_info';
