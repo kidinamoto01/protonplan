@@ -140,13 +140,14 @@ object Readkafka {
 
     // Get the lines
     //webmiddle
-    /*
+
     messages.foreachRDD{ x =>
 
       //val sqlContext = new org.apache.spark.sql.SQLContext(sc)
-      val sqlContext = new  HiveContext(sc)
+      val hiveContext = new  HiveContext(sc)
+      hiveContext.sql("set hive.exec.dynamic.partition.mode=nonstrict")
       // val text = sqlContext.read.json(x)
-      val text = sqlContext.read.json(x)
+      val text = hiveContext.read.json(x)
 
       //get json schame
       text.toDF().printSchema()
@@ -157,35 +158,37 @@ object Readkafka {
       {
 
         println("write")
-
         //text.write.format("parquet").mode(SaveMode.Append).parquet("hdfs://192.168.1.21:8020/sheshou/data/parquet/"+"webmiddle"+"/"+Year+"/"+Month+"/"+date+"/"+Hour+"/")
-        sqlContext.udf.register("attack", attack _)
+        hiveContext.udf.register("attack", attack _)
+        text.registerTempTable("webmiddle")
+
         //val tmp = sqlContext.sql("select t.id,t.attack_time,t.destip as dst_ip, t.srcip as src_ip, t.attack_type, t.srccountrycode as src_country_code, t.srccountry as src_country, t.srccity as src_city,t.destcountrycode as dst_country_code,t.destcountry as dst_country,t.destcity as dst_city , t.srclatitude as src_latitude, t.srclongitude as src_longitude ,t.destlatitude as dst_latitude ,t.destlongitude as dst_longitude ,t.end_time,t.asset_id,t.asset_name,t.alert_level from (select \"0\" as id,loginresult , collecttime as attack_time, destip,srcip,\"forcebreak\" as attack_type ,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collectequpip,collecttime as end_time, count(*) as sum ,\"0\" as asset_id, \"name\" as asset_name,\"0\" as  alert_level from windowslogin group by loginresult,collecttime,destip,srcip,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collecttime,collectequpip)t where (t.sum > 2 and ( t.loginresult = 539 or t.loginresult = 529 or  t.loginresult = 528 ))")
-        val tmp= sqlContext.sql("select \"0\" as id,collecttime as attack_time,  \"0\" as dst_ip,srcip as src_ip, attack(requestpage) as attack_type, srccountrycode as src_country_code, srccountry as src_country, srccity as src_city,\"0\" as dst_country_code,\"0\" as dst_country,\"0\" as dst_city,srclatitude as src_latitude, srclongitude as  src_longitude, \"0\" as dst_latitude,\"0\" as dst_longitude, collecttime as  end_time, id as asset_id,\"0\" as assent_name,warnlevel as alert_level ,year,month,day,hour from webmiddle where attack(requestpage) != \"Nothing\" ")
+        val tmp= hiveContext.sql("select \"0\" as id,collecttime as attack_time,  \"0\" as dst_ip,srcip as src_ip, attack(requestpage) as attack_type, srccountrycode as src_country_code, srccountry as src_country, srccity as src_city,\"0\" as dst_country_code,\"0\" as dst_country,\"0\" as dst_city,srclatitude as src_latitude, srclongitude as  src_longitude, \"0\" as dst_latitude,\"0\" as dst_longitude, collecttime as  end_time, id as asset_id,\"0\" as asset_name,warnlevel as alert_level ,year,month,day,hour from webmiddle where attack(requestpage) != \"Nothing\" ")
 
         tmp.printSchema()
-        tmp.registerTempTable("webmiddle")
-        sqlContext.sql("insert into sheshou.attack_list partition(year,month,day,hour) select * from webmiddle")
+        tmp.registerTempTable("attacklist")
+
+        hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, asset_id,asset_name,alert_level,year,month,day,hour from attacklist")
 
         //insert into  mysql
-        val prop = new Properties()
+       /* val prop = new Properties()
         prop.setProperty("user", user)
         prop.setProperty("password", passwd)
         val dfWriter = tmp.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
 
-        dfWriter.jdbc(url, "attack_list", prop)
+        dfWriter.jdbc(url, "attack_list", prop)*/
       }
 
     }
-*/
+
 
     // Get the lines
     //windowslogin
     messages3.foreachRDD{ x =>
 
-      val sqlContext = new  HiveContext(sc)
+      val hiveContext = new  HiveContext(sc)
       // val text = sqlContext.read.json(x)
-      val text = sqlContext.read.json(x)
+      val text = hiveContext.read.json(x)
 
       //get json schame
       text.toDF().printSchema()
@@ -196,11 +199,11 @@ object Readkafka {
       {
 
         println("write3")
-
-        val result = sqlContext.sql("select t.id,t.attack_time,t.destip as dst_ip, t.srcip as src_ip, t.attack_type, t.srccountrycode as src_country_code, t.srccountry as src_country, t.srccity as src_city,t.destcountrycode as dst_country_code,t.destcountry as dst_country,t.destcity as dst_city , t.srclatitude as src_latitude, t.srclongitude as src_longitude ,t.destlatitude as dst_latitude ,t.destlongitude as dst_longitude ,t.end_time,t.asset_id,t.asset_name,t.alert_level,t.year,t.month,t.day,t.hour from (select \"0\" as id,loginresult , collecttime as attack_time, destip,srcip,\"暴力破解\" as attack_type ,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collectequpip,collecttime as end_time, count(*) as sum ,\"0\" as asset_id, \"name\" as asset_name,\"0\" as  alert_level ,year,month,day,hour from windowslogin group by loginresult,collecttime,destip,srcip,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collecttime,collectequpip,year,month,day,hour)t where t.sum > 2")
+        hiveContext.sql("set hive.exec.dynamic.partition.mode=nonstrict")
+        val result = hiveContext.sql("select t.id,t.attack_time,t.destip as dst_ip, t.srcip as src_ip, t.attack_type, t.srccountrycode as src_country_code, t.srccountry as src_country, t.srccity as src_city,t.destcountrycode as dst_country_code,t.destcountry as dst_country,t.destcity as dst_city , t.srclatitude as src_latitude, t.srclongitude as src_longitude ,t.destlatitude as dst_latitude ,t.destlongitude as dst_longitude ,t.end_time,t.asset_id,t.asset_name,t.alert_level,t.year,t.month,t.day,t.hour from (select \"0\" as id,loginresult , collecttime as attack_time, destip,srcip,\"暴力破解\" as attack_type ,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collectequpip,collecttime as end_time, count(*) as sum ,\"0\" as asset_id, \"name\" as asset_name,\"0\" as  alert_level ,year,month,day,hour from windowslogin group by loginresult,collecttime,destip,srcip,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collecttime,collectequpip,year,month,day,hour)t where t.sum > 2")
         result.registerTempTable("attacklist")
         result.printSchema()
-        sqlContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select * from attacklist")
+        hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select  id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, asset_id,asset_name,alert_level,year,month,day,hour  from attacklist")
         //insert into  mysql
         val prop = new Properties()
         prop.setProperty("user", user)
