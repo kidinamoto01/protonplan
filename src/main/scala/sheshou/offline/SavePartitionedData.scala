@@ -43,6 +43,7 @@ object SavePartitionedData {
     netstdType.printSchema()
 
     netstdType.write.mode(SaveMode.Append).format("parquet").partitionBy("category","subcategory").saveAsTable("typetable")
+
    // sqlContext.sql("select * from typetable").show
 
   }
