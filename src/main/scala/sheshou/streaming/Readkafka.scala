@@ -143,6 +143,7 @@ object Readkafka {
 
     // Get the lines
     //webmiddle
+    /*
     messages.foreachRDD{ x =>
 
       //val sqlContext = new org.apache.spark.sql.SQLContext(sc)
@@ -213,7 +214,7 @@ object Readkafka {
       }
 
     }
-
+*/
     //netstds
         messgesnet.foreachRDD { x =>
           val sqlContext = new HiveContext(sc)
@@ -247,11 +248,11 @@ object Readkafka {
 
             //insert into  mysql
 
-            val prop = new Properties()
+         /*   val prop = new Properties()
             prop.setProperty("user", user)
             prop.setProperty("password", passwd)
             val dfWriter = tmp.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
-            dfWriter.jdbc(url, "attack_list", prop)
+            dfWriter.jdbc(url, "attack_list", prop)*/
           }
         }
     // Start the computation
