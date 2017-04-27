@@ -124,9 +124,6 @@ object Readkafka {
     val messages = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
       ssc, kafkaParams,  Set("webmiddle")).map(_._2)
 
-    //    val messages2 = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
-    //      ssc, kafkaParams, Set("netstds")).map(_._2)
-
     val messages3 = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
       ssc, kafkaParams, Set("windowslogin")).map(_._2)
 
@@ -180,7 +177,7 @@ object Readkafka {
       }
 
     }
-
+*/
 
     // Get the lines
     //windowslogin
@@ -200,26 +197,26 @@ object Readkafka {
 
         println("write3")
 
-        val result = sqlContext.sql("select t.id,t.attack_time,t.destip as dst_ip, t.srcip as src_ip, t.attack_type, t.srccountrycode as src_country_code, t.srccountry as src_country, t.srccity as src_city,t.destcountrycode as dst_country_code,t.destcountry as dst_country,t.destcity as dst_city , t.srclatitude as src_latitude, t.srclongitude as src_longitude ,t.destlatitude as dst_latitude ,t.destlongitude as dst_longitude ,t.end_time,t.asset_id,t.asset_name,t.alert_level from (select \"0\" as id,loginresult , collecttime as attack_time, destip,srcip,\"forcebreak\" as attack_type ,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collectequpip,collecttime as end_time, count(*) as sum ,\"0\" as asset_id, \"name\" as asset_name,\"0\" as  alert_level from windowslogin group by loginresult,collecttime,destip,srcip,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collecttime,collectequpip)t where t.sum > 2")
+        val result = sqlContext.sql("select t.id,t.attack_time,t.destip as dst_ip, t.srcip as src_ip, t.attack_type, t.srccountrycode as src_country_code, t.srccountry as src_country, t.srccity as src_city,t.destcountrycode as dst_country_code,t.destcountry as dst_country,t.destcity as dst_city , t.srclatitude as src_latitude, t.srclongitude as src_longitude ,t.destlatitude as dst_latitude ,t.destlongitude as dst_longitude ,t.end_time,t.asset_id,t.asset_name,t.alert_level,t.year,t.month,t.day,t.hour from (select \"0\" as id,loginresult , collecttime as attack_time, destip,srcip,\"暴力破解\" as attack_type ,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collectequpip,collecttime as end_time, count(*) as sum ,\"0\" as asset_id, \"name\" as asset_name,\"0\" as  alert_level ,year,month,day,hour from windowslogin group by loginresult,collecttime,destip,srcip,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collecttime,collectequpip,year,month,day,hour)t where t.sum > 2")
         result.registerTempTable("attacklist")
         result.printSchema()
-        sqlContext.sql("insert into sheshou.attack_list partition(year,month,day,hour) select * from attacklist")
+        sqlContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select * from attacklist")
         //insert into  mysql
         val prop = new Properties()
         prop.setProperty("user", user)
         prop.setProperty("password", passwd)
-        val dfWriter = result.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
+      //  val dfWriter = result.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
 
-        dfWriter.jdbc(url, "attack_list", prop)
+       // dfWriter.jdbc(url, "attack_list", prop)
       }
 
     }
-*/
+
     //netstds
         messgesnet.foreachRDD { x =>
-          val sqlContext = new HiveContext(sc)
+          val hiveContext = new HiveContext(sc)
           // val text = sqlContext.read.json(x)
-          val text = sqlContext.read.json(x)
+          val text = hiveContext.read.json(x)
 
           //get json schame
           text.printSchema()
@@ -228,22 +225,24 @@ object Readkafka {
           //make sure the RDD is not empty
           if (text.count() > 0) {
 
+            hiveContext.sql("set hive.exec.dynamic.partition.mode=nonstrict")
             text.registerTempTable("netstds")
 
-            val netstdType = sqlContext.read.csv("hdfs://192.168.1.21:8020/tmp/netstds_type")
+            val netstdType = hiveContext.read.csv("/tmp/netstds_type").toDF("id","category","desc1","subcategory","desc2")
             netstdType.registerTempTable("netstdtype")
             netstdType.printSchema()
 
             //(select _c1 as category ,_c2 as attack_type, _c3 as subcategory from netstdtype)t
-            val mergedata = sqlContext.sql("select * from netstds left join  netstdtype on netstds.category = netstdtype._c1 and  netstds.subcategory = netstdtype._c3 ")
+            val mergedata = hiveContext.sql("select * from netstds left join  netstdtype on netstds.category = netstdtype.category and  netstds.subcategory = netstdtype.subcategory ")
             mergedata.registerTempTable("result_table")
             mergedata.printSchema()
 
-            val tmp= sqlContext.sql("select \"0\" as id, time as attack_time,  dstIP as dst_ip,srcip as src_ip, _c4 as attack_type, \"0\" as src_country_code, srcLocation as src_country, srcLocation as src_city,\"0\" as dst_country_code,dstLocation as dst_country,dstLocation as dst_city,srclatitude as src_latitude, srclongitude as  src_longitude, dstLatitude as dst_latitude,dstLongitude as dst_longitude, time as  end_time, \"0\" as asset_id,toolName as assent_name,\"0\" as alert_level  from result_table ")
-
+            val tmp= hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select \"0\" as id,  attack_time, dst_ip, src_ip, desc2 as attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level,year,month,day,hour  from result_table ")
+            tmp.printSchema()
             tmp.registerTempTable("attacklist")
             //insert into table
-            sqlContext.sql("insert into sheshou.attack_list partition(year,month,day,hour) select * from attacklist")
+            //val result = hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,year,month,day,hour from TempTable")
+            //hiveContext.sql("insert into sheshou.attack_list partition('year','month','day','hour') select * from attacklist")
 
 
             //insert into  mysql
