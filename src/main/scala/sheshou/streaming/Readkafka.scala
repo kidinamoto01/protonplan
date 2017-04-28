@@ -114,7 +114,7 @@ object Readkafka {
     //sparkConf.set("spark.hadoop.parquet.enable.summary-metadata", "true")
     //spark.hadoop.parquet.enable.summary-metadata false
     val  sc = new SparkContext(sparkConf)
-    val ssc = new StreamingContext(sc, Seconds(10))
+    val ssc = new StreamingContext(sc, Seconds(30))
 
 
     // Create direct kafka stream with brokers and topics
@@ -171,12 +171,12 @@ object Readkafka {
         hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, asset_id,asset_name,alert_level,year,month,day,hour from attacklist")
 
         //insert into  mysql
-       /* val prop = new Properties()
+       val prop = new Properties()
         prop.setProperty("user", user)
         prop.setProperty("password", passwd)
         val dfWriter = tmp.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
 
-        dfWriter.jdbc(url, "attack_list", prop)*/
+        dfWriter.jdbc(url, "attack_list", prop)
       }
 
     }
@@ -205,12 +205,14 @@ object Readkafka {
         result.printSchema()
         hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select  id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, asset_id,asset_name,alert_level,year,month,day,hour  from attacklist")
         //insert into  mysql
+
         val prop = new Properties()
         prop.setProperty("user", user)
         prop.setProperty("password", passwd)
-      //  val dfWriter = result.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
 
-       // dfWriter.jdbc(url, "attack_list", prop)
+       val dfWriter = result.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
+
+        dfWriter.jdbc(url, "attack_list", prop)
       }
 
     }
@@ -243,18 +245,14 @@ object Readkafka {
             val tmp= hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select \"0\" as id,  attack_time, dst_ip, src_ip, desc2 as attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level,year,month,day,hour  from result_table ")
             tmp.printSchema()
             tmp.registerTempTable("attacklist")
-            //insert into table
-            //val result = hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,year,month,day,hour from TempTable")
-            //hiveContext.sql("insert into sheshou.attack_list partition('year','month','day','hour') select * from attacklist")
-
 
             //insert into  mysql
 
-         /*   val prop = new Properties()
+            val prop = new Properties()
             prop.setProperty("user", user)
             prop.setProperty("password", passwd)
             val dfWriter = tmp.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
-            dfWriter.jdbc(url, "attack_list", prop)*/
+            dfWriter.jdbc(url, "attack_list", prop)
           }
         }
     // Start the computation
