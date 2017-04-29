@@ -64,10 +64,9 @@ object PredictValue {
   }
 
   def main(args: Array[String]) {
-    if (args.length < 5) {
+    if (args.length < 45) {
       System.err.println(s"""
                             |Usage: DirectKafkaWordCount <brokers> <topics>
-                            |  <hiveurl> is a list of one or more Kafka brokers
                             |  <databasename> is a list of one or more kafka topics to consume from
                             |  <tablename1>
                             |  <col_name>
@@ -77,8 +76,7 @@ object PredictValue {
     }
 
 
-    val Array(hiveurl, databasename,tablename1,col_name,tablename2) = args
-    println(hiveurl)
+    val Array(databasename,tablename1,col_name,tablename2) = args
     println(databasename)
     println(tablename1)
     println(col_name)
@@ -90,13 +88,15 @@ object PredictValue {
     //create hive context
     //val hiveContext = new org.apache.spark.sql.hive.HiveContext(sc)
     Class.forName("org.apache.hive.jdbc.HiveDriver");
-    val conn = DriverManager.getConnection("jdbc:hive2://"+hiveurl+"/"+databasename+"?hive.execution.engine=mr")
+   // val conn = DriverManager.getConnection("jdbc:hive2://"+hiveurl+"/"+databasename+"?hive.execution.engine=mr")
+
+    val connectionString = "jdbc:mysql://192.168.1.22:3306/log_info?user=root&password=andlinks"
+    val conn = DriverManager.getConnection(connectionString)
 
     //get input table
     val sqlQuery = "SELECT time_hour,"+col_name+" FROM "+tablename1
     println(sqlQuery)
-    val source: ResultSet = conn.createStatement
-      .executeQuery(sqlQuery)
+    val source: ResultSet = conn.createStatement.executeQuery(sqlQuery)
     //fetch all the data
     val fetchedSrc = mutable.MutableList[HourStatus]()
     while(source.next()) {

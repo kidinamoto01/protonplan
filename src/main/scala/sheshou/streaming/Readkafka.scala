@@ -193,6 +193,7 @@ object Readkafka {
 
         println("write3")
         hiveContext.sql("set hive.exec.dynamic.partition.mode=nonstrict")
+        text.registerTempTable("windowslogin")
         val result = hiveContext.sql("select t.id,t.attack_time,t.destip as dst_ip, t.srcip as src_ip, t.attack_type, t.srccountrycode as src_country_code, t.srccountry as src_country, t.srccity as src_city,t.destcountrycode as dst_country_code,t.destcountry as dst_country,t.destcity as dst_city , t.srclatitude as src_latitude, t.srclongitude as src_longitude ,t.destlatitude as dst_latitude ,t.destlongitude as dst_longitude ,t.end_time,t.asset_id,t.asset_name,t.alert_level,t.year,t.month,t.day,t.hour from (select \"0\" as id,loginresult , collecttime as attack_time, destip,srcip,\"暴力破解\" as attack_type ,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collectequpip,collecttime as end_time, count(*) as sum ,\"0\" as asset_id, \"name\" as asset_name,\"0\" as  alert_level ,year,month,day,hour from windowslogin group by loginresult,collecttime,destip,srcip,srccountrycode,srccountry,srccity,destcountrycode,destcountry,destcity,srclatitude,srclongitude,destlatitude,destlongitude,collecttime,collectequpip,year,month,day,hour)t where t.sum > 2")
         result.registerTempTable("attacklist")
         result.printSchema()
