@@ -64,7 +64,7 @@ object PredictValue {
   }
 
   def main(args: Array[String]) {
-    if (args.length < 45) {
+    if (args.length < 4) {
       System.err.println(s"""
                             |Usage: DirectKafkaWordCount <brokers> <topics>
                             |  <databasename> is a list of one or more kafka topics to consume from
