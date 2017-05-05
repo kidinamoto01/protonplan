@@ -4,7 +4,7 @@ import java.sql.{Connection, DriverManager}
 
 import org.apache.log4j.Logger
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import java.util.List;
+
 
 /**
   * Created by fenglu on 2017/4/27.

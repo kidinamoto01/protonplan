@@ -132,6 +132,15 @@ object Readkafka {
     val messgesnet = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
       ssc, kafkaParams, Set("netstdsonline")).map(_._2)
 
+    val messgeVirus = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+      ssc, kafkaParams, Set("reportvirus")).map(_._2)
+
+    val messgeCve = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+      ssc, kafkaParams, Set("reportcve")).map(_._2)
+
+    val messgeOe = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+      ssc, kafkaParams, Set("attachmentoe")).map(_._2)
+
     //webmiddle
     messages.foreachRDD{ x =>
 
@@ -260,6 +269,112 @@ object Readkafka {
         dfWriter.jdbc(url, "attack_list", prop)
       }
     }
+
+    //report_virus
+    messgeVirus.foreachRDD { x =>
+      val hiveContext = new HiveContext(sc)
+      // val text = sqlContext.read.json(x)
+      val text = hiveContext.read.json(x)
+
+      //get json schame
+      text.printSchema()
+
+      //save text into parquet file
+      //make sure the RDD is not empty
+      if (text.count() > 0) {
+
+        hiveContext.sql("set hive.exec.dynamic.partition.mode=nonstrict")
+        text.registerTempTable("messgevirus")
+        text.printSchema()
+
+       hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select \"0\" as id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level,year,month,day,hour  from messgevirus ")
+
+        log.info("insert into hive is ")
+
+        //分析天，小时数据
+        val stat = new Stats(hiveContext,text,url,user,passwd)
+        stat.stat()
+
+        //insert into  attack_list@mysql
+        val mysqlDF = hiveContext.sql("select \"0\" as id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level  from messgevirus")
+        val prop = new Properties()
+        prop.setProperty("user", user)
+        prop.setProperty("password", passwd)
+        val dfWriter = mysqlDF.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
+        dfWriter.jdbc(url, "attack_list", prop)
+      }
+    }
+
+    //report_cve
+    messgeCve.foreachRDD { x =>
+      val hiveContext = new HiveContext(sc)
+      // val text = sqlContext.read.json(x)
+      val text = hiveContext.read.json(x)
+
+      //get json schame
+      text.printSchema()
+
+      //save text into parquet file
+      //make sure the RDD is not empty
+      if (text.count() > 0) {
+
+        hiveContext.sql("set hive.exec.dynamic.partition.mode=nonstrict")
+        text.registerTempTable("messagecve")
+        text.printSchema()
+
+        hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select \"0\" as id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level,year,month,day,hour  from messagecve ")
+
+        log.info("insert into hive is ")
+
+        //分析天，小时数据
+        val stat = new Stats(hiveContext,text,url,user,passwd)
+        stat.stat()
+
+        //insert into  attack_list@mysql
+        val mysqlDF = hiveContext.sql("select \"0\" as id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level  from messagecve")
+        val prop = new Properties()
+        prop.setProperty("user", user)
+        prop.setProperty("password", passwd)
+        val dfWriter = mysqlDF.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
+        dfWriter.jdbc(url, "attack_list", prop)
+      }
+    }
+
+    //attachment_oe
+    messgeOe.foreachRDD { x =>
+      val hiveContext = new HiveContext(sc)
+      // val text = sqlContext.read.json(x)
+      val text = hiveContext.read.json(x)
+
+      //get json schame
+      text.printSchema()
+
+      //save text into parquet file
+      //make sure the RDD is not empty
+      if (text.count() > 0) {
+
+        hiveContext.sql("set hive.exec.dynamic.partition.mode=nonstrict")
+        text.registerTempTable("messageoe")
+        text.printSchema()
+
+        hiveContext.sql("insert into sheshou.attack_list partition(`year`,`month`,`day`,`hour`) select \"0\" as id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level,year,month,day,hour  from messageoe")
+
+        log.info("insert into hive is ")
+
+        //分析天，小时数据
+        val stat = new Stats(hiveContext,text,url,user,passwd)
+        stat.stat()
+
+        //insert into  attack_list@mysql
+        val mysqlDF = hiveContext.sql("select \"0\" as id,  attack_time, dst_ip, src_ip,  attack_type, src_country_code,  src_country, src_city,dst_country_code, dst_country, dst_city, src_latitude,  src_longitude, dst_latitude, dst_longitude,  end_time, \"0\" as asset_id,asset_name,\"0\" as alert_level  from messageoe")
+        val prop = new Properties()
+        prop.setProperty("user", user)
+        prop.setProperty("password", passwd)
+        val dfWriter = mysqlDF.write.mode("append").option("driver", "com.mysql.jdbc.Driver")
+        dfWriter.jdbc(url, "attack_list", prop)
+      }
+    }
+
     // Start the computation
     ssc.start()
     ssc.awaitTermination()
